@@ -15,56 +15,44 @@ The review will evaluate conflict detection, graph construction, Greedy Coloring
 - Generated examination timetable.
 - Comparison of algorithm results.
 
-## 3. Completed Work
+## 3. Sprint Outcomes
 
-The actual completed user stories and implementation results will be recorded after verification.
+Sprint 2 focuses on defining the examination conflict graph and timetable generation methods. Greedy Coloring and DSATUR are used to assign examinations to different time slots while avoiding clashes between examinations sharing students.
 
 ## 4. Demonstration
 
-The Sprint 2 demonstration will include:
+The planned demonstration includes:
+- Displaying examinations as graph vertices.
+- Showing edges between conflicting examinations.
+- Running Greedy Coloring.
+- Running DSATUR.
+- Comparing the number of time slots generated.
+- Checking that conflicting examinations are assigned different time slots.
 
-1. Showing the examination conflict graph.
-2. Demonstrating how shared-student conflicts are identified.
-3. Running Greedy Coloring.
-4. Displaying the generated time-slot allocation.
-5. Running DSATUR.
-6. Comparing the number of time slots used by both algorithms.
-7. Verifying that conflicting examinations are scheduled in different time slots.
+## 5. Sprint Review
 
-Screenshots of the actual execution and generated results will be added after completion.
+The graph representation and coloring algorithms provide the scheduling foundation of the system. The generated time slots are used as input for room allocation and seating plan generation in Sprint 3.
 
-## 5. Sprint Review Results
+## 6. Retrospective
 
-| Area | Review Status |
-|---|---|
-| Graph representation | Pending verification |
-| Conflict detection | Pending verification |
-| Greedy Coloring | Pending verification |
-| DSATUR | Pending verification |
-| Timetable generation | Pending verification |
-| Testing | Pending execution |
-
-## 6. Sprint Retrospective
-
-### What Went Well
-
-To be updated based on actual team experience.
+### What Went Well?
+- Graph coloring provides a suitable approach for examination scheduling.
+- Greedy Coloring and DSATUR offer two methods for comparison.
+- Conflict detection is based on shared student enrollment.
 
 ### Challenges Faced
+- Correctly identifying examination conflicts.
+- Choosing an appropriate vertex ordering for Greedy Coloring.
+- Handling vertices with similar saturation degrees in DSATUR.
+- Comparing algorithm results fairly.
 
-To be updated based on actual development and integration issues.
+### Improvements for Next Sprint
+- Connect timetable output with room allocation.
+- Implement seating plan generation.
+- Validate room capacity and student assignments.
 
-### Areas for Improvement
-
-To be identified during the sprint retrospective.
-
-## 7. Improvements for the Next Sprint
-
-- Implement room allocation.
-- Check available room capacities.
-- Assign students to examination rooms.
-- Generate organized seating arrangements.
-- Integrate timetable and room allocation modules.
+## 7. Sprint Status
+Sprint 2 defines the core graph-based scheduling approach and prepares the system for room allocation and seating plan development.
 
 ## 8. Sprint Conclusion
 
