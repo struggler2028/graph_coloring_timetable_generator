@@ -10,38 +10,41 @@ Sprint 3 focuses on room allocation, seating plan generation, and backend integr
 - Integration with timetable data.
 - Testing and validation of allocation modules.
 
-## 3. Work Completed
-To be updated after sprint execution.
+## 3. Sprint Outcomes
+
+Sprint 3 focuses on room allocation, seating plan generation, and integration with the examination timetable. The allocation process considers student strength and room capacity, while the seating module assigns students to available seats.
 
 ## 4. Demonstration
-The sprint demonstration will include:
-- Displaying available examination rooms.
-- Assigning rooms according to student strength.
-- Checking room capacity.
+
+The planned demonstration includes:
+- Displaying available examination rooms and their capacities.
+- Assigning rooms to examinations.
+- Checking room capacity constraints.
 - Generating student seating arrangements.
-- Displaying the final seating plan.
+- Displaying examination-wise seating details.
 
 ## 5. Sprint Review
-The team will verify whether:
-- Rooms are allocated correctly.
-- Room capacity constraints are followed.
-- Every student receives a seat.
-- No duplicate seat assignments occur.
-- The modules work with the generated timetable.
+
+Room allocation and seating plan generation extend the timetable system beyond examination scheduling. The generated timetable provides the examination details required for room assignment, and the room allocation information is used to prepare seating plans.
 
 ## 6. Retrospective
 
 ### What Went Well?
-To be updated after the sprint.
+- Room allocation follows examination student strength.
+- Capacity validation helps prevent over-allocation.
+- Seating plans provide student-wise examination information.
 
 ### Challenges Faced
-To be updated after the sprint.
+- Handling examinations with large student counts.
+- Managing insufficient room capacity.
+- Avoiding duplicate student seat assignments.
+- Maintaining consistency between timetable, room, and seating data.
 
 ### Improvements for Next Sprint
-- Improve integration between all modules.
-- Perform complete system testing.
-- Improve output presentation and validation.
-- Prepare the system for final demonstration.
+- Complete frontend and backend integration.
+- Perform end-to-end system testing.
+- Improve performance and input validation.
+- Prepare downloadable reports and final demonstration.
 
 ## 7. Sprint Status
-Planned. Final sprint results will be added after review.
+Sprint 3 defines the room allocation and seating plan functionality required to complete the examination management workflow.
