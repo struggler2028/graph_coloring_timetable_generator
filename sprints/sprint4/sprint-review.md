@@ -12,43 +12,48 @@ Sprint 4 focuses on final integration, system testing, performance evaluation, r
 - PDF report generation.
 - Final project documentation and presentation.
 
-## 3. Work Completed
-To be updated after sprint execution.
+## 3. Sprint Outcomes
+
+Sprint 4 brings together the major modules of the examination timetabling system. The complete workflow covers data entry, graph construction, conflict detection, timetable generation, room allocation, seating plan generation, and report preparation.
 
 ## 4. Final Demonstration
-The final demonstration will include:
 
+The final demonstration includes:
 1. Entering student, course, examination, and room details.
 2. Displaying the examination conflict graph.
 3. Running Greedy Coloring and DSATUR.
-4. Comparing generated timetables.
+4. Comparing the generated time-slot allocations.
 5. Allocating examination rooms.
 6. Generating student seating plans.
-7. Displaying and exporting final reports.
+7. Displaying and exporting the final reports.
 
 ## 5. Sprint Review
-The team will verify whether:
-- All project modules are integrated.
-- Timetable generation works correctly.
-- Examination conflicts are handled.
-- Room allocation follows capacity constraints.
-- Seating plans are generated correctly.
-- Reports contain accurate information.
-- The system performs properly with different datasets.
+
+The final review focuses on the integration of all major project modules. The system is evaluated based on timetable correctness, conflict avoidance, room capacity compliance, seating allocation, and report generation.
 
 ## 6. Retrospective
 
 ### What Went Well?
-To be updated after the final review.
+- The project workflow covers examination scheduling and seating allocation.
+- Two graph coloring algorithms provide alternative scheduling approaches.
+- Room allocation and seating plans extend the functionality of the timetable.
 
 ### Challenges Faced
-To be updated after the final review.
+- Integrating frontend and backend components.
+- Maintaining consistency between different modules.
+- Handling invalid or incomplete input data.
+- Evaluating performance with larger datasets.
+- Ensuring that exported reports contain accurate information.
 
 ### Improvements
-To be updated based on testing and team feedback.
+- Improve the user interface and navigation.
+- Optimize graph processing and data retrieval.
+- Strengthen input validation and error handling.
+- Improve the presentation of timetable and seating reports.
 
 ## 7. Final Project Outcome
-The expected outcome is a functional web-based examination timetabling system that uses graph coloring algorithms to generate clash-free timetables, allocate rooms, and prepare student seating plans.
+
+The project aims to provide a web-based examination timetabling system using graph coloring techniques. It generates clash-free examination schedules, allocates rooms according to capacity, and prepares student seating plans.
 
 ## 8. Sprint Status
-Planned. Final results will be updated after project completion.
+Sprint 4 brings together the planned development, integration, testing, and documentation activities for the final project phase.
