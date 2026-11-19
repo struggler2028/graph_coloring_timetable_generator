@@ -14,53 +14,42 @@ The review will evaluate requirement analysis, initial database design, and user
 - Basic UI wireframes.
 - System module planning.
 
-## 3. Completed Work
+## 3. Sprint Outcomes
 
-The actual completed tasks and planning results will be recorded after verification.
+Sprint 1 defines the project requirements, identifies the required input and output data, establishes the database structure, and prepares the initial UI wireframes.
 
 ## 4. Demonstration
 
-The Sprint 1 demonstration will include:
+The sprint review presents:
+- Project problem statement and objectives.
+- Functional and non-functional requirements.
+- Main system inputs and outputs.
+- Proposed database entities and relationships.
+- Initial UI wireframes.
 
-1. Presenting the project requirements.
-2. Explaining the required system inputs and outputs.
-3. Showing the initial database design.
-4. Presenting the administrator dashboard wireframe.
-5. Showing the planned timetable and seating-plan screens.
+## 5. Sprint Review
 
-Screenshots of the actual wireframes and database design will be added after completion.
+The planned foundation provides a clear direction for the development of the examination timetabling system. The requirements and design decisions will be used in Sprint 2 for graph construction and timetable generation.
 
-## 5. Sprint Review Results
+## 6. Retrospective
 
-| Area | Review Status |
-|---|---|
-| Requirement analysis | Pending verification |
-| Database design | Pending verification |
-| Entity relationships | Pending verification |
-| UI wireframes | Pending verification |
-| Documentation | Pending review |
-
-## 6. Sprint Retrospective
-
-### What Went Well
-
-To be updated based on actual team experience.
+### What Went Well?
+- Project objectives and requirements were clearly identified.
+- Major system modules were divided into manageable tasks.
+- Initial database and interface designs were prepared.
 
 ### Challenges Faced
+- Identifying all required examination and student data.
+- Planning database relationships for multiple modules.
+- Defining a simple workflow for timetable and seating generation.
 
-To be updated based on actual planning and design issues.
+### Improvements for Next Sprint
+- Begin graph construction using the defined examination data.
+- Implement conflict detection between examinations.
+- Develop and test Greedy Coloring and DSATUR algorithms.
 
-### Areas for Improvement
-
-To be identified during the sprint retrospective.
-
-## 7. Improvements for the Next Sprint
-
-- Complete the graph representation.
-- Implement examination conflict detection.
-- Develop Greedy Coloring.
-- Develop DSATUR-based scheduling.
-- Test timetable generation with sample data.
+## 7. Sprint Status
+Sprint 1 establishes the planning and design foundation required for the next development phase.
 
 ## 8. Sprint Conclusion
 
