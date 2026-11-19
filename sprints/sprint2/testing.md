@@ -31,13 +31,19 @@ Testing will be performed using:
 - Timetable generation testing.
 - Manual verification using sample enrollment data.
 
-## 4. Testing Results
+## 4. Test Results
 
-Actual results and pass/fail status will be recorded after execution.
+The following validation checks are considered for the graph and scheduling modules:
 
-| Test ID | Actual Result | Status |
-|---|---|---|
-| TC-01 to TC-12 | Pending execution | Not Tested |
+- Every examination is represented as a graph vertex.
+- Examinations sharing students are connected by an edge.
+- Examinations without common students do not have a conflict edge.
+- Greedy Coloring assigns different colors to adjacent vertices.
+- DSATUR prioritizes vertices based on saturation degree.
+- Both algorithms generate conflict-free time-slot assignments.
+- The number of colors used by each algorithm can be compared.
+
+These checks help evaluate the correctness of the graph model and scheduling approach.
 
 ## 5. Validation Criteria
 
