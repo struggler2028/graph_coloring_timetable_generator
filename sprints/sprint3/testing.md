@@ -26,6 +26,14 @@ To verify that room allocation, seating plan generation, and backend integration
 - Integration errors should be handled properly.
 
 ## 4. Test Results
-Test execution and actual results are pending.
+The following validation checks are considered for Sprint 3:
 
-Results will be updated after testing the implemented modules.
+- Suitable rooms are selected for examinations.
+- The total assigned students do not exceed available room capacity.
+- Insufficient room capacity is identified.
+- Students are assigned seats in their allocated rooms.
+- Duplicate seat assignments are avoided.
+- All registered students are considered during seating allocation.
+- Room and seating details match the generated examination timetable.
+
+These checks help verify the correctness of room allocation and seating plan logic.
