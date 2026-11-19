@@ -37,4 +37,17 @@ The system will be tested with different dataset sizes to observe:
 - All integrated modules work together.
 
 ## 5. Test Results
-Testing results are pending and will be recorded after executing the complete system.
+
+The following validation activities are considered for the complete system:
+
+- Student, course, examination, and room data are checked.
+- Conflict graph generation is verified.
+- Greedy Coloring and DSATUR are evaluated for clash-free scheduling.
+- Room allocation is checked against available capacity.
+- Seating plans are checked for completeness and duplicate assignments.
+- Timetable regeneration is considered after changes in examination or enrollment data.
+- PDF reports are checked for correct timetable and seating information.
+- Invalid inputs are checked for appropriate error handling.
+- Different dataset sizes are considered for performance evaluation.
+
+These checks provide an overall evaluation framework for the integrated system.
