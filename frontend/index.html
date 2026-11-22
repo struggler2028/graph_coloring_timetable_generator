@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Timetable & Seating Plan Generator | Graph Coloring</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Cytoscape.js for graph visualization -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @media print {
+      body { background: white !important; color: black !important; }
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      .card-print { break-inside: avoid; border: 1px solid #ccc !important; box-shadow: none !important; color: black !important; background: white !important; }
+    }
+    .print-only { display: none; }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-cyan-500 selection:text-white">
+
+  <!-- Header / Navigation -->
+  <header class="no-print border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <i data-lucide="network" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-bold bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
+            Graph Coloring Exam Timetabler
+          </h1>
+          <p class="text-xs text-slate-400">DSATUR & Greedy Scheduling + Automated Seating Allocation</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <button id="load-sample-btn" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition flex items-center space-x-1.5">
+          <i data-lucide="database" class="w-4 h-4"></i>
+          <span>Reset Sample Data</span>
+        </button>
+        <button id="print-export-btn" class="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white shadow-md shadow-cyan-500/20 transition flex items-center space-x-1.5">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          <span>Print / Export PDF</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Controls Bar -->
+  <section class="no-print bg-slate-900/50 border-b border-slate-800/80 px-4 py-3">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <div>
+          <label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Algorithm</label>
+          <select id="algo-select" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+            <option value="dsatur">DSATUR (Saturation Priority - Optimal)</option>
+            <option value="greedy">Greedy Coloring (Sequential)</option>
+            <option value="both" selected>Compare Both (Benchmark)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Start Date</label>
+          <input type="date" id="start-date" value="2026-12-01" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Slots Per Day</label>
+          <select id="slots-per-day" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+            <option value="1">1 (Morning only)</option>
+            <option value="2" selected>2 (Morning & Afternoon)</option>
+            <option value="3">3 (Morning, Afternoon & Evening)</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <button id="run-generate-btn" class="px-5 py-2 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/25 transition flex items-center space-x-2">
+          <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+          <span>Generate Schedule</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation Tabs -->
+  <nav class="no-print bg-slate-900 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 flex space-x-6">
+      <button data-tab="tab-graph" class="tab-btn py-3 px-1 border-b-2 border-cyan-500 text-cyan-400 text-xs font-semibold flex items-center space-x-2">
+        <i data-lucide="share-2" class="w-4 h-4"></i>
+        <span>Conflict Graph</span>
+      </button>
+      <button data-tab="tab-compare" class="tab-btn py-3 px-1 border-b-2 border-transparent text-slate-400 hover:text-slate-200 text-xs font-semibold flex items-center space-x-2">
+        <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+        <span>Algorithm Comparison</span>
+      </button>
+      <button data-tab="tab-timetable" class="tab-btn py-3 px-1 border-b-2 border-transparent text-slate-400 hover:text-slate-200 text-xs font-semibold flex items-center space-x-2">
+        <i data-lucide="calendar" class="w-4 h-4"></i>
+        <span>Examination Timetable</span>
+      </button>
+      <button data-tab="tab-seating" class="tab-btn py-3 px-1 border-b-2 border-transparent text-slate-400 hover:text-slate-200 text-xs font-semibold flex items-center space-x-2">
+        <i data-lucide="armchair" class="w-4 h-4"></i>
+        <span>Room & Seating Plan</span>
+      </button>
+      <button data-tab="tab-data" class="tab-btn py-3 px-1 border-b-2 border-transparent text-slate-400 hover:text-slate-200 text-xs font-semibold flex items-center space-x-2">
+        <i data-lucide="layers" class="w-4 h-4"></i>
+        <span>Academic Records</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content Areas -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+    
+    <!-- Status / Warnings Banner -->
+    <div id="warning-banner" class="hidden mb-6 p-4 rounded-xl bg-amber-950/40 border border-amber-800/80 text-amber-300 text-xs flex items-start space-x-3">
+      <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
+      <div id="warning-content"></div>
+    </div>
+
+    <!-- TAB 1: CONFLICT GRAPH -->
+    <div id="tab-graph" class="tab-content block">
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Canvas -->
+        <div class="lg:col-span-3 bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col h-[650px] relative">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div class="flex items-center space-x-2">
+              <span class="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">Examination Conflict Network G = (V, E)</span>
+            </div>
+            <div class="text-[11px] text-slate-400 flex items-center space-x-4">
+              <span id="graph-stat-nodes">Vertices: 0</span>
+              <span id="graph-stat-edges">Edges: 0</span>
+              <span id="graph-stat-density">Density: 0%</span>
+            </div>
+          </div>
+          <div id="cy" class="flex-1 w-full rounded-xl bg-slate-950/60 mt-3 border border-slate-800/50"></div>
+          <div class="text-[11px] text-slate-500 mt-2 flex justify-between items-center">
+            <span>Click any node to inspect conflicting neighbors and shared student enrollments.</span>
+            <span>Colors represent distinct allocated time slots.</span>
+          </div>
+        </div>
+
+        <!-- Node Inspector / Legend -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+          <div>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center space-x-1.5">
+              <i data-lucide="info" class="w-4 h-4 text-cyan-400"></i>
+              <span>Inspection Panel</span>
+            </h2>
+            <div id="node-inspector" class="text-xs text-slate-300 space-y-3">
+              <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-slate-400 text-center">
+                Click a vertex or conflict edge on the graph to inspect details.
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-slate-800">
+            <h3 class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">Time Slot Color Map</h3>
+            <div id="color-legend" class="grid grid-cols-2 gap-2 text-[11px]">
+              <!-- Filled dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: ALGORITHM COMPARISON -->
+    <div id="tab-compare" class="tab-content hidden">
+      <div class="mb-6">
+        <h2 class="text-lg font-bold text-white">Algorithm Benchmark: Greedy Coloring vs DSATUR</h2>
+        <p class="text-xs text-slate-400">Comparing vertex degree saturation versus simple sequential coloring on the examination conflict graph.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- DSATUR Card -->
+        <div class="bg-slate-900 border border-indigo-500/40 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-2">
+              <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">RECOMMENDED</span>
+              <h3 class="text-base font-bold text-white">DSATUR Algorithm</h3>
+            </div>
+            <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>
+          </div>
+          <p class="text-xs text-slate-400 mb-6 leading-relaxed">
+            Selects vertices with the highest saturation degree (number of distinct neighbor colors), using degree as tie-breaker. Dynamically optimizes chromatic bounds.
+          </p>
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+              <span class="text-[10px] uppercase font-semibold text-slate-400">Time Slots Used</span>
+              <div id="dsatur-slots" class="text-2xl font-bold text-indigo-400 mt-1">--</div>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+              <span class="text-[10px] uppercase font-semibold text-slate-400">Execution Time</span>
+              <div id="dsatur-time" class="text-2xl font-bold text-emerald-400 mt-1">-- ms</div>
+            </div>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-950/40 border border-slate-800/80 text-xs">
+            <div class="flex justify-between py-1 border-b border-slate-800">
+              <span class="text-slate-400">Graph Validity:</span>
+              <span id="dsatur-valid" class="font-semibold text-emerald-400">Valid (0 clashes)</span>
+            </div>
+            <div class="flex justify-between py-1">
+              <span class="text-slate-400">Color Distribution:</span>
+              <span id="dsatur-dist" class="font-mono text-slate-300">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Greedy Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-bold text-slate-200">Greedy Coloring</h3>
+            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">BASELINE</span>
+          </div>
+          <p class="text-xs text-slate-400 mb-6 leading-relaxed">
+            Processes vertices in fixed ordering, assigning the smallest available color not yet used by neighbors. Simple and fast, but can use extra time slots.
+          </p>
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+              <span class="text-[10px] uppercase font-semibold text-slate-400">Time Slots Used</span>
+              <div id="greedy-slots" class="text-2xl font-bold text-slate-200 mt-1">--</div>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+              <span class="text-[10px] uppercase font-semibold text-slate-400">Execution Time</span>
+              <div id="greedy-time" class="text-2xl font-bold text-cyan-400 mt-1">-- ms</div>
+            </div>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-950/40 border border-slate-800/80 text-xs">
+            <div class="flex justify-between py-1 border-b border-slate-800">
+              <span class="text-slate-400">Graph Validity:</span>
+              <span id="greedy-valid" class="font-semibold text-emerald-400">Valid (0 clashes)</span>
+            </div>
+            <div class="flex justify-between py-1">
+              <span class="text-slate-400">Color Distribution:</span>
+              <span id="greedy-dist" class="font-mono text-slate-300">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: TIMETABLE SCHEDULE -->
+    <div id="tab-timetable" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-lg font-bold text-white">Generated Examination Timetable</h2>
+          <p class="text-xs text-slate-400">Conflict-free time slot assignments generated via graph coloring.</p>
+        </div>
+        <div id="timetable-badge" class="px-3 py-1 rounded-lg bg-cyan-950/60 border border-cyan-800 text-cyan-300 text-xs font-semibold">
+          -- Time Slots Required
+        </div>
+      </div>
+
+      <div id="timetable-container" class="space-y-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- TAB 4: ROOM & SEATING PLAN -->
+    <div id="tab-seating" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-lg font-bold text-white">Room Allocation & Student Seating Plan</h2>
+          <p class="text-xs text-slate-400">Capacity-checked student seat matrices for every examination session.</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <select id="seating-slot-filter" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none">
+            <option value="all">All Examination Slots</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="seating-container" class="space-y-6">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- TAB 5: ACADEMIC DATA MANAGER -->
+    <div id="tab-data" class="tab-content hidden">
+      <div class="mb-6 flex justify-between items-center">
+        <div>
+          <h2 class="text-lg font-bold text-white">Academic Records & Parameters</h2>
+          <p class="text-xs text-slate-400">Manage students, course enrollments, examination modules, and rooms.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Examinations -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-3 flex items-center space-x-2">
+            <i data-lucide="book-open" class="w-4 h-4"></i>
+            <span>Examinations (<span id="data-count-exams">0</span>)</span>
+          </h3>
+          <div class="overflow-y-auto max-h-80 rounded-xl border border-slate-800">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 sticky top-0">
+                <tr>
+                  <th class="p-2.5">Code</th>
+                  <th class="p-2.5">Title</th>
+                  <th class="p-2.5">Duration</th>
+                </tr>
+              </thead>
+              <tbody id="table-exams-body" class="divide-y divide-slate-800/60 bg-slate-900/50"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Rooms -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3 flex items-center space-x-2">
+            <i data-lucide="door-open" class="w-4 h-4"></i>
+            <span>Available Rooms (<span id="data-count-rooms">0</span>)</span>
+          </h3>
+          <div class="overflow-y-auto max-h-80 rounded-xl border border-slate-800">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 sticky top-0">
+                <tr>
+                  <th class="p-2.5">Room ID</th>
+                  <th class="p-2.5">Building</th>
+                  <th class="p-2.5 text-right">Capacity</th>
+                </tr>
+              </thead>
+              <tbody id="table-rooms-body" class="divide-y divide-slate-800/60 bg-slate-900/50"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Students & Enrollments -->
+        <div class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center space-x-2">
+            <i data-lucide="users" class="w-4 h-4"></i>
+            <span>Enrolled Students (<span id="data-count-students">0</span>)</span>
+          </h3>
+          <div class="overflow-y-auto max-h-96 rounded-xl border border-slate-800">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 sticky top-0">
+                <tr>
+                  <th class="p-2.5">Roll No</th>
+                  <th class="p-2.5">Full Name</th>
+                  <th class="p-2.5">Enrolled Courses</th>
+                </tr>
+              </thead>
+              <tbody id="table-students-body" class="divide-y divide-slate-800/60 bg-slate-900/50"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- PRINT ONLY REPORT TEMPLATE -->
+  <div class="print-only p-8 text-black bg-white">
+    <div class="border-b-2 border-black pb-4 mb-6 text-center">
+      <h1 class="text-2xl font-bold">EXAMINATION TIMETABLE & SEATING PLAN REPORT</h1>
+      <p class="text-sm">Generated by Dynamic Graph Coloring Scheduling System</p>
+    </div>
+    <div id="print-content"></div>
+  </div>
+
+  <footer class="no-print border-t border-slate-900 bg-slate-950 text-center py-4 text-xs text-slate-500">
+    Dynamic Graph Coloring Examination Timetabling & Seating Plan Generator &copy; 2026
+  </footer>
+
+  <!-- Application Logic -->
+  <script>
+    const COLOR_PALETTE = [
+      "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", 
+      "#EC4899", "#06B6D4", "#F97316", "#84CC16", "#6366F1", "#14B8A6", "#D946EF"
+    ];
+
+    let currentDataset = null;
+    let latestTimetableResponse = null;
+    let cyInstance = null;
+
+    // Tabs navigation
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-tab');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById(targetId).classList.remove('hidden');
+
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('border-cyan-500', 'text-cyan-400');
+          b.classList.add('border-transparent', 'text-slate-400');
+        });
+        btn.classList.add('border-cyan-500', 'text-cyan-400');
+        btn.classList.remove('border-transparent', 'text-slate-400');
+
+        if (targetId === 'tab-graph' && cyInstance) {
+          setTimeout(() => { cyInstance.resize(); cyInstance.fit(); }, 50);
+        }
+      });
+    });
+
+    async function fetchSampleData() {
+      try {
+        const res = await fetch('/api/sample-data');
+        if (res.ok) {
+          currentDataset = await res.json();
+          renderDataTables();
+          await runGeneration();
+        }
+      } catch (err) {
+        console.error("Failed to load sample data:", err);
+      }
+    }
+
+    function renderDataTables() {
+      if (!currentDataset) return;
+      document.getElementById('data-count-exams').textContent = currentDataset.exams.length;
+      document.getElementById('data-count-rooms').textContent = currentDataset.rooms.length;
+      document.getElementById('data-count-students').textContent = currentDataset.students.length;
+
+      // Exams
+      const examTbody = document.getElementById('table-exams-body');
+      examTbody.innerHTML = currentDataset.exams.map(e => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-2.5 font-mono text-cyan-400 font-semibold">${e.course_code}</td>
+          <td class="p-2.5 text-slate-200">${e.exam_name}</td>
+          <td class="p-2.5 text-slate-400">${e.duration_minutes} min</td>
+        </tr>
+      `).join('');
+
+      // Rooms
+      const roomTbody = document.getElementById('table-rooms-body');
+      roomTbody.innerHTML = currentDataset.rooms.map(r => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-2.5 font-mono text-emerald-400 font-semibold">${r.room_number}</td>
+          <td class="p-2.5 text-slate-300">${r.building || 'Main'}</td>
+          <td class="p-2.5 text-right font-bold text-slate-200">${r.capacity} seats</td>
+        </tr>
+      `).join('');
+
+      // Students
+      const stuTbody = document.getElementById('table-students-body');
+      stuTbody.innerHTML = currentDataset.students.map(s => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-2.5 font-mono text-indigo-400 font-semibold">${s.student_id}</td>
+          <td class="p-2.5 text-slate-200">${s.name}</td>
+          <td class="p-2.5 text-slate-400">${s.enrolled_courses.map(c => `<span class="inline-block px-1.5 py-0.5 mr-1 rounded bg-slate-800 text-[10px] text-cyan-300 border border-slate-700">${c}</span>`).join('')}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function runGeneration() {
+      if (!currentDataset) return;
+      const algo = document.getElementById('algo-select').value;
+      const startDate = document.getElementById('start-date').value;
+      const slotsPerDay = parseInt(document.getElementById('slots-per-day').value);
+
+      const payload = {
+        ...currentDataset,
+        algorithm: algo,
+        start_date: startDate,
+        slots_per_day: slotsPerDay
+      };
+
+      try {
+        const res = await fetch('/api/timetable/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          latestTimetableResponse = await res.json();
+          renderDashboard(latestTimetableResponse);
+        }
+      } catch (err) {
+        console.error("Generation error:", err);
+      }
+    }
+
+    function renderDashboard(data) {
+      // Warnings
+      const warnBanner = document.getElementById('warning-banner');
+      const warnContent = document.getElementById('warning-content');
+      if (data.warnings && data.warnings.length > 0) {
+        warnBanner.classList.remove('hidden');
+        warnContent.innerHTML = data.warnings.map(w => `<p class="mb-1">${w}</p>`).join('');
+      } else {
+        warnBanner.classList.add('hidden');
+      }
+
+      // Graph stats
+      document.getElementById('graph-stat-nodes').textContent = `Vertices: ${data.conflict_graph.total_nodes}`;
+      document.getElementById('graph-stat-edges').textContent = `Edges: ${data.conflict_graph.total_edges}`;
+      document.getElementById('graph-stat-density').textContent = `Density: ${(data.conflict_graph.density * 100).toFixed(1)}%`;
+      document.getElementById('timetable-badge').textContent = `${data.total_slots} Time Slots Required`;
+
+      // Render Cytoscape
+      renderCytoscape(data.conflict_graph);
+
+      // Render Benchmark Comparison
+      renderBenchmark(data);
+
+      // Render Timetable
+      renderTimetable(data.schedule);
+
+      // Render Seating Plan
+      renderSeating(data.schedule);
+
+      // Refresh icons
+      lucide.createIcons();
+    }
+
+    function renderCytoscape(graphData) {
+      const cyElements = [];
+      const colorLegend = document.getElementById('color-legend');
+      colorLegend.innerHTML = '';
+      const seenColors = new Set();
+
+      graphData.nodes.forEach(n => {
+        const nodeColor = n.color_hex || COLOR_PALETTE[(n.color || 0) % COLOR_PALETTE.length];
+        seenColors.add({ idx: n.color, hex: nodeColor });
+        cyElements.push({
+          group: 'nodes',
+          data: {
+            id: n.id,
+            label: n.course_code,
+            full_label: n.label,
+            color: nodeColor,
+            degree: n.degree,
+            saturation: n.saturation,
+            students: n.student_count,
+            slot: (n.color !== null && n.color !== undefined) ? `Slot ${n.color + 1}` : 'Unassigned'
+          }
+        });
+      });
+
+      graphData.edges.forEach(e => {
+        cyElements.push({
+          group: 'edges',
+          data: {
+            id: `${e.source}-${e.target}`,
+            source: e.source,
+            target: e.target,
+            weight: e.weight,
+            shared: e.shared_students
+          }
+        });
+      });
+
+      // Populate Legend
+      Array.from(seenColors).sort((a,b) => a.idx - b.idx).forEach(c => {
+        colorLegend.innerHTML += `
+          <div class="flex items-center space-x-1.5 p-1 rounded bg-slate-950/40">
+            <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${c.hex}"></span>
+            <span class="text-slate-300 font-mono text-[10px]">Slot ${c.idx + 1}</span>
+          </div>
+        `;
+      });
+
+      if (cyInstance) {
+        cyInstance.destroy();
+      }
+
+      cyInstance = cytoscape({
+        container: document.getElementById('cy'),
+        elements: cyElements,
+        style: [
+          {
+            selector: 'node',
+            style: {
+              'background-color': 'data(color)',
+              'label': 'data(label)',
+              'color': '#ffffff',
+              'font-size': '11px',
+              'font-weight': 'bold',
+              'text-valign': 'center',
+              'text-halign': 'center',
+              'width': '52px',
+              'height': '52px',
+              'border-width': 2,
+              'border-color': '#0f172a',
+              'shadow-blur': 12,
+              'shadow-color': 'data(color)',
+              'shadow-opacity': 0.4
+            }
+          },
+          {
+            selector: 'edge',
+            style: {
+              'width': 'mapData(weight, 1, 10, 1.5, 4)',
+              'line-color': '#475569',
+              'opacity': 0.6,
+              'curve-style': 'bezier'
+            }
+          },
+          {
+            selector: 'node:selected',
+            style: {
+              'border-width': 4,
+              'border-color': '#ffffff'
+            }
+          }
+        ],
+        layout: {
+          name: 'cose',
+          animate: false,
+          padding: 30,
+          componentSpacing: 60,
+          nodeOverlap: 20
+        }
+      });
+
+      // Node click inspection
+      cyInstance.on('tap', 'node', function(evt){
+        const node = evt.target;
+        const d = node.data();
+        const inspector = document.getElementById('node-inspector');
+        inspector.innerHTML = `
+          <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold" style="background-color: ${d.color}20; color: ${d.color}; border: 1px solid ${d.color}40">${d.slot}</span>
+              <span class="text-slate-400 font-mono text-[10px]">${d.id}</span>
+            </div>
+            <h4 class="font-bold text-slate-100 text-sm">${d.full_label}</h4>
+            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/80 text-[11px]">
+              <div>
+                <span class="text-slate-500 block">Enrolled:</span>
+                <span class="font-semibold text-slate-200">${d.students} students</span>
+              </div>
+              <div>
+                <span class="text-slate-500 block">Degree:</span>
+                <span class="font-semibold text-slate-200">${d.degree} clashes</span>
+              </div>
+              <div>
+                <span class="text-slate-500 block">Saturation:</span>
+                <span class="font-semibold text-slate-200">${d.saturation}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function renderBenchmark(data) {
+      if (data.comparison) {
+        const d = data.comparison.dsatur;
+        const g = data.comparison.greedy;
+        document.getElementById('dsatur-slots').textContent = `${d.slots_used} Slots`;
+        document.getElementById('dsatur-time').textContent = `${d.execution_time_ms.toFixed(2)} ms`;
+        document.getElementById('dsatur-dist').textContent = JSON.stringify(d.color_distribution);
+
+        document.getElementById('greedy-slots').textContent = `${g.slots_used} Slots`;
+        document.getElementById('greedy-time').textContent = `${g.execution_time_ms.toFixed(2)} ms`;
+        document.getElementById('greedy-dist').textContent = JSON.stringify(g.color_distribution);
+      } else {
+        document.getElementById('dsatur-slots').textContent = `${data.metrics.slots_used} Slots`;
+        document.getElementById('dsatur-time').textContent = `${data.metrics.execution_time_ms.toFixed(2)} ms`;
+        document.getElementById('dsatur-dist').textContent = JSON.stringify(data.metrics.color_distribution);
+      }
+    }
+
+    function renderTimetable(schedule) {
+      const container = document.getElementById('timetable-container');
+      container.innerHTML = schedule.map(slot => `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+          <div class="flex flex-wrap items-center justify-between pb-3 border-b border-slate-800 gap-2">
+            <div class="flex items-center space-x-3">
+              <span class="px-3 py-1 rounded-lg bg-cyan-500/10 text-cyan-400 font-bold text-xs border border-cyan-500/30">
+                ${slot.slot_label}
+              </span>
+              <span class="text-xs text-slate-400 flex items-center space-x-1">
+                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                <span>${slot.date} | ${slot.time}</span>
+              </span>
+            </div>
+            <span class="text-xs text-slate-400">${slot.exams.length} Concurrent Exams (No Clashes)</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+            ${slot.exams.map(exam => `
+              <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition">
+                <div class="flex justify-between items-start mb-2">
+                  <span class="font-mono text-xs font-bold text-cyan-400">${exam.course_code}</span>
+                  <span class="text-[11px] text-slate-400 font-medium">${exam.total_students} Candidates</span>
+                </div>
+                <h4 class="text-xs font-semibold text-slate-200 mb-3">${exam.exam_name}</h4>
+                <div class="text-[11px] text-slate-400 space-y-1">
+                  ${exam.room_allocations.map(r => `
+                    <div class="flex justify-between items-center bg-slate-900 px-2 py-1 rounded">
+                      <span class="text-slate-300 font-medium"><i data-lucide="door-open" class="inline w-3 h-3 text-emerald-400 mr-1"></i>${r.room_number}</span>
+                      <span class="text-slate-400">${r.allocated_count} seats</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderSeating(schedule) {
+      const container = document.getElementById('seating-container');
+      const filterSelect = document.getElementById('seating-slot-filter');
+      
+      filterSelect.innerHTML = `<option value="all">All Examination Slots (${schedule.length})</option>` + 
+        schedule.map(s => `<option value="${s.slot_index}">${s.slot_label}</option>`).join('');
+
+      function displaySlots(slotsToRender) {
+        container.innerHTML = slotsToRender.map(slot => `
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl card-print">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-800 mb-5">
+              <div>
+                <h3 class="text-sm font-bold text-white">${slot.slot_label} - Seating Arrangement</h3>
+                <p class="text-xs text-slate-400">${slot.date} | ${slot.time}</p>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              ${slot.exams.map(exam => `
+                <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+                  <div class="flex justify-between items-center mb-4">
+                    <span class="text-xs font-bold text-cyan-400">${exam.course_code}: ${exam.exam_name}</span>
+                    <span class="text-xs text-slate-400">${exam.total_students} Students</span>
+                  </div>
+
+                  <div class="space-y-4">
+                    ${exam.room_allocations.map(r => `
+                      <div class="border border-slate-800 rounded-lg p-3 bg-slate-900/60">
+                        <div class="flex justify-between items-center text-xs font-semibold text-slate-300 mb-3 pb-2 border-b border-slate-800">
+                          <span>${r.room_number} (${r.building || 'Campus'})</span>
+                          <span class="text-emerald-400">${r.allocated_count} / ${r.capacity} Seats Allocated</span>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 text-center">
+                          ${r.seats.map(st => `
+                            <div class="p-2 rounded bg-slate-950 border border-slate-800/80 text-[10px] hover:border-cyan-500/60 transition">
+                              <span class="font-mono text-cyan-400 font-bold block">${st.seat_number}</span>
+                              <span class="text-slate-200 font-medium truncate block">${st.student_name}</span>
+                              <span class="text-slate-500 font-mono text-[9px] block">${st.student_id}</span>
+                            </div>
+                          `).join('')}
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
+        lucide.createIcons();
+      }
+
+      displaySlots(schedule);
+
+      filterSelect.onchange = () => {
+        const val = filterSelect.value;
+        if (val === 'all') {
+          displaySlots(schedule);
+        } else {
+          displaySlots(schedule.filter(s => s.slot_index == val));
+        }
+      };
+    }
+
+    // Print & PDF Export
+    document.getElementById('print-export-btn').addEventListener('click', () => {
+      const printDiv = document.getElementById('print-content');
+      if (!latestTimetableResponse) return;
+      printDiv.innerHTML = `
+        <h2 class="text-xl font-bold mb-4">Final Examination Timetable (${latestTimetableResponse.algorithm_used})</h2>
+        <table class="w-full border-collapse border border-black mb-8 text-sm">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="border border-black p-2">Slot</th>
+              <th class="border border-black p-2">Date & Time</th>
+              <th class="border border-black p-2">Course Code & Name</th>
+              <th class="border border-black p-2">Assigned Rooms</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${latestTimetableResponse.schedule.flatMap(slot => 
+              slot.exams.map(e => `
+                <tr>
+                  <td class="border border-black p-2 font-bold">${slot.slot_label}</td>
+                  <td class="border border-black p-2">${slot.date}<br>${slot.time}</td>
+                  <td class="border border-black p-2 font-bold">${e.course_code} - ${e.exam_name}</td>
+                  <td class="border border-black p-2">${e.room_allocations.map(r => `${r.room_number} (${r.allocated_count} seats)`).join(', ')}</td>
+                </tr>
+              `)
+            ).join('')}
+          </tbody>
+        </table>
+      `;
+      window.print();
+    });
+
+    document.getElementById('run-generate-btn').addEventListener('click', runGeneration);
+    document.getElementById('load-sample-btn').addEventListener('click', fetchSampleData);
+
+    // Initial load
+    fetchSampleData();
+  </script>
+</body>
+</html>

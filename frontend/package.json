@@ -1,0 +1,12 @@
+{
+  "name": "graph-coloring-timetable-frontend",
+  "version": "1.0.0",
+  "description": "Frontend visualizer and control panel for Graph Coloring Exam Timetabler and Seating Plan Generator",
+  "scripts": {
+    "start": "npx serve -l 3000 ."
+  },
+  "dependencies": {
+    "cytoscape": "^3.28.1",
+    "lucide": "^0.460.0"
+  }
+}
