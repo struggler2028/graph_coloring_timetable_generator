@@ -1,0 +1,103 @@
+# Sprint Execution and Review
+
+## 1. Introduction
+
+The project follows the Scrum Agile methodology. Development is divided into four sprints, with each sprint focusing on specific functionalities and deliverables.
+
+## 2. Sprint 1 – Requirement Analysis and Design
+
+**Duration:** Week 1
+
+### Activities
+- Identify the problem and project objectives.
+- Analyze functional requirements.
+- Identify student, course, examination, and room data requirements.
+- Design the initial database structure.
+- Prepare initial user-interface wireframes.
+
+### Expected Deliverables
+- Requirement specification.
+- Initial database design.
+- UI wireframes.
+- Project architecture.
+
+### Sprint Review
+The team reviews the requirements and verifies whether the proposed design addresses the examination scheduling problem.
+
+## 3. Sprint 2 – Graph Construction and Timetable Generation
+
+**Duration:** Week 2
+
+### Activities
+- Implement examination graph representation.
+- Develop conflict detection using shared-student information.
+- Implement Greedy Coloring.
+- Implement the DSATUR algorithm.
+- Generate examination time slots.
+- Compare algorithm results.
+
+### Expected Deliverables
+- Examination conflict graph.
+- Conflict detection module.
+- Graph-coloring algorithms.
+- Initial timetable generation.
+
+### Sprint Review
+The generated timetable is checked to ensure that examinations sharing students are not scheduled in the same time slot.
+
+## 4. Sprint 3 – Room Allocation and Seating Plan
+
+**Duration:** Week 3
+
+### Activities
+- Implement room management.
+- Develop room-capacity checking.
+- Allocate students to available examination rooms.
+- Generate seating arrangements.
+- Integrate backend functionality.
+
+### Expected Deliverables
+- Room allocation module.
+- Seating-plan generation.
+- Backend integration.
+
+### Sprint Review
+The team verifies room capacities and checks whether students are assigned appropriately.
+
+## 5. Sprint 4 – Integration and Final Testing
+
+**Duration:** Week 4
+
+### Activities
+- Integrate frontend and backend components.
+- Integrate graph visualization.
+- Test timetable generation.
+- Validate room allocation and seating arrangements.
+- Optimize system performance.
+- Prepare project documentation and final demonstration.
+
+### Expected Deliverables
+- Integrated application.
+- Tested timetable generator.
+- Final seating-plan functionality.
+- Project report.
+- Final demonstration.
+
+### Sprint Review
+The team evaluates the complete system against the original project requirements and records any remaining issues.
+
+## 6. Sprint Retrospective
+
+At the end of each sprint, the team discusses:
+
+- Tasks completed successfully.
+- Technical challenges encountered.
+- Issues affecting development progress.
+- Improvements required in the next sprint.
+- Changes needed in the product backlog.
+
+## 7. Final Project Outcome
+
+The expected final outcome is a functional prototype capable of generating examination timetables using graph coloring and producing room-wise seating plans.
+
+**Note:** The activities and reviews above describe the planned sprint execution. Actual completion status and results should be updated by the team after each sprint.
